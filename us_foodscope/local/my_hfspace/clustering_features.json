@@ -1,0 +1,86 @@
+{
+  "Median_Income": {
+    "type": "numeric",
+    "label": "Median Income ($)",
+    "min": 0,
+    "max": 200000,
+    "category": "Economic"
+  },
+  "Poverty_Rate": {
+    "type": "numeric",
+    "label": "Poverty Rate (%)",
+    "min": 0,
+    "max": 100,
+    "category": "Economic"
+  },
+  "PCT_65OLDER10": {
+    "type": "numeric",
+    "label": "% Age 65+",
+    "min": 0,
+    "max": 100,
+    "category": "Demographics"
+  },
+  "PCT_18YOUNGER10": {
+    "type": "numeric",
+    "label": "% Age <18",
+    "min": 0,
+    "max": 100,
+    "category": "Demographics"
+  },
+  "PCT_HISP10": {
+    "type": "numeric",
+    "label": "% Hispanic",
+    "min": 0,
+    "max": 100,
+    "category": "Ethnicity"
+  },
+  "PCT_NHBLACK10": {
+    "type": "numeric",
+    "label": "% Non-Hispanic Black",
+    "min": 0,
+    "max": 100,
+    "category": "Ethnicity"
+  },
+  "FOODINSEC_13_15": {
+    "type": "numeric",
+    "label": "Food Insecurity Rate",
+    "min": 0,
+    "max": 100,
+    "category": "Food Security"
+  },
+  "Farmers_Markets_Count_16": {
+    "type": "numeric",
+    "label": "Farmers Markets Count",
+    "min": 0,
+    "max": 100,
+    "category": "Local Food Access"
+  },
+  "FMRKTPTH16": {
+    "type": "numeric",
+    "label": "Farmers Markets per 1000 People",
+    "min": 0,
+    "max": 10,
+    "category": "Local Food Access"
+  },
+  "PCT_LOCLFARM12": {
+    "type": "numeric",
+    "label": "% Local Farms",
+    "min": 0,
+    "max": 100,
+    "category": "Local Agriculture"
+  },
+  "PC_DIRSALES12": {
+    "type": "numeric",
+    "label": "Direct Sales per Capita ($)",
+    "min": 0,
+    "max": 1000,
+    "category": "Local Agriculture"
+  },
+  "PCH_VEG_ACRESPTH_07_12": {
+    "type": "numeric",
+    "label": "% Change in Vegetable Acres",
+    "min": -100,
+    "max": 100,
+    "category": "Local Agriculture"
+  }
+}

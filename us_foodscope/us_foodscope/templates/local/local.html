@@ -1,0 +1,64 @@
+{% extends 'local/local_base.html' %}
+{% load static %}
+
+{% block local_content %}
+<!-- Welcome Page -->
+<div class="welcome-section">
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">
+                    <i class="fas fa-leaf text-success"></i> Local Food Analysis
+                </h1>
+                <p class="lead text-muted">Select a feature from the sidebar to get started</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Info Cards -->
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">
+                        <i class="fas fa-chart-line text-primary"></i>
+                    </div>
+                    <h5>Regression Prediction</h5>
+                    <p class="text-muted small">Predict food insecurity metrics using XGBoost</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">
+                        <i class="fas fa-cube text-success"></i>
+                    </div>
+                    <h5>Clustering Analysis</h5>
+                    <p class="text-muted small">Segment regions into clusters for analysis</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-5 border-0">
+        <i class="fas fa-arrow-left me-2"></i>
+        <strong>Tip:</strong> Click on either "Regression Prediction" or "Clustering Analysis" in the sidebar to begin.
+    </div>
+</div>
+
+<style>
+.welcome-section {
+    padding: 2rem 0;
+}
+
+.card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}

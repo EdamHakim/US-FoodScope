@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header" style="margin-bottom: 1.5rem;">
+    <h2>Food Insecurity Clustering Analysis</h2>
+    <p class="page-description">Geographic analysis of counties with structural food access vulnerability. Identifying priority areas for food system intervention and resource allocation.</p>
+</div>
+
+<!-- KPI Summary Row -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+    <div class="card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+        <div
+            style="width: 52px; height: 52px; background: rgba(222, 45, 38, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#de2d26" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 28px; font-weight: 700; color: #de2d26; line-height: 1;"
+                id="county-count">-</div>
+            <div
+                style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin-top: 0.25rem;">
+                Total Counties Analyzed</div>
+        </div>
+    </div>
+    <div class="card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+        <div
+            style="width: 52px; height: 52px; background: rgba(222, 45, 38, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#de2d26" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 28px; font-weight: 700; color: #de2d26; line-height: 1;" id="high-count">-
+            </div>
+            <div
+                style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin-top: 0.25rem;">
+                High Structural Vulnerability</div>
+        </div>
+    </div>
+    <div class="card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+        <div
+            style="width: 52px; height: 52px; background: rgba(158, 202, 225, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#9ecae1" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 28px; font-weight: 700; color: #9ecae1; line-height: 1;" id="baseline-count">-
+            </div>
+            <div
+                style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin-top: 0.25rem;">
+                Baseline (Typical) Counties</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="dashboard-grid" style="grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    <!-- LEFT: Map Visualization -->
+    <div class="input-panel">
+        <div class="card" style="height: 100%; display: flex; flex-direction: column;">
+            <div class="card-header" style="border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+                <h3 class="card-title">
+                    <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    Structural Food Access Vulnerability Map
+                </h3>
+            </div>
+
+            <div id="map"
+                style="flex: 1; height: 450px; border-radius: 8px; margin-top: 1rem; border: 1px solid var(--color-border); min-height: 450px;">
+            </div>
+
+            <!-- Legend Bar -->
+            <div
+                style="margin-top: 1rem; padding: 1rem; background: var(--color-bg-secondary); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span
+                        style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Vulnerability Level:</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div
+                            style="width: 24px; height: 16px; background: #9ecae1; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1);">
+                        </div>
+                        <span style="font-size: 12px; color: var(--color-text-secondary);">Baseline (Typical)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div
+                            style="width: 24px; height: 16px; background: #de2d26; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1);">
+                        </div>
+                        <span style="font-size: 12px; color: var(--color-text-secondary);">High Structural Vulnerability</span>
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: var(--color-text-muted);">
+                    <em>Hover over counties for details</em>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Insights Panel -->
+    <div class="insights-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+
+        <!-- Priority Counties -->
+        <div class="card" style="flex: 1;">
+            <div class="card-header" style="border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+                <h3 class="card-title" style="color: #de2d26;">
+                    <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    High-Vulnerability Counties
+                </h3>
+            </div>
+            <p style="font-size: 12px; color: var(--color-text-muted); margin: 0.75rem 0;">Counties with structural food access challenges requiring immediate attention.</p>
+            <div id="priority-counties-container" style="color: var(--color-text-secondary); font-size: 13px;">
+                <div style="text-align: center; padding: 2rem; color: var(--color-text-muted);">
+                    <div style="font-size: 24px; margin-bottom: 0.5rem;">⏳</div>
+                    Loading data...
+                </div>
+            </div>
+        </div>
+
+        <!-- Methodology Info -->
+        <div class="card">
+            <div class="card-header" style="border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+                <h3 class="card-title">
+                    <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Analysis Methodology
+                </h3>
+            </div>
+            <div style="color: var(--color-text-secondary); line-height: 1.6; font-size: 13px;">
+                <p style="margin-bottom: 0.75rem;"><strong style="color: #de2d26;">Data Sources:</strong>
+                    Low-access food population percentages, vulnerable demographic characteristics (racial/ethnic minorities), poverty rates, and health indicators.</p>
+                <p style="margin-bottom: 0.75rem;"><strong style="color: #de2d26;">Clustering Method:</strong>
+                    K-Means unsupervised learning identifies 2 clusters based on structural food access patterns across 8 key features.</p>
+                <p style="margin: 0;"><strong style="color: #de2d26;">Usage:</strong> Target food system interventions, retail development, and community nutrition programs to high-vulnerability areas.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        console.log('=== INSECURITY CLUSTERING MAP INITIALIZATION ===');
+
+        // Initialize map
+        const map = L.map('map').setView([37.8, -96], 4);
+
+        // Add base tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        try {
+            // Fetch clustering data from our API
+            console.log('Fetching food insecurity cluster data...');
+            const response = await fetch('{% url "food_clustering_api" %}');
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 100)}...`);
+            }
+
+            const clusterData = await response.json();
+            console.log('✓ Cluster data loaded:', clusterData);
+
+            if (!clusterData || !clusterData.counties || clusterData.counties.length === 0) {
+                console.warn('⚠ No clustering data available');
+                document.getElementById('county-count').textContent = '0';
+                document.getElementById('high-count').textContent = '0';
+                document.getElementById('baseline-count').textContent = '0';
+                return;
+            }
+
+            // Update KPI statistics
+            const totalCounties = clusterData.stats.total;
+            const highVulnerability = clusterData.stats.high_vulnerability;
+            const baseline = clusterData.stats.baseline;
+
+            document.getElementById('county-count').textContent = totalCounties;
+            document.getElementById('high-count').textContent = highVulnerability;
+            document.getElementById('baseline-count').textContent = baseline;
+
+            console.log('✓ Stats - Total:', totalCounties, 'High:', highVulnerability, 'Baseline:', baseline);
+
+            // Get high-vulnerability counties for the sidebar
+            const highRiskCounties = clusterData.counties.filter(c => c.cluster === 1);
+            const priorityCounties = highRiskCounties.slice(0, 10);  // Show top 10
+
+            const priorityHtml = priorityCounties.length > 0 
+                ? priorityCounties.map((county, index) => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; 
+                                background: ${index === 0 ? 'rgba(222, 45, 38, 0.1)' : 'rgba(0,0,0,0.02)'}; 
+                                border-radius: 6px; margin-bottom: 0.5rem;
+                                border-left: 3px solid #de2d26;">
+                        <div>
+                            <div style="font-weight: 600; color: var(--color-text);">${county.county}, ${county.state}</div>
+                            <div style="font-size: 12px; color: var(--color-text-muted);">${county.risk_label}</div>
+                        </div>
+                    </div>
+                `).join('')
+                : '<div style="padding: 1rem; text-align: center; color: var(--color-text-muted);">No high-vulnerability counties</div>';
+
+            document.getElementById('priority-counties-container').innerHTML = priorityHtml;
+
+            // Create lookup from CSV data
+            const countyLookup = {};
+            clusterData.counties.forEach(item => {
+                // Key by state|county format for easier matching
+                const key = `${item.state.toUpperCase()}|${item.county}`;
+                countyLookup[key] = item;
+            });
+
+            console.log('✓ County lookup created with', Object.keys(countyLookup).length, 'entries');
+
+            // Fetch US Counties GeoJSON
+            console.log('Fetching GeoJSON...');
+            const geoResponse = await fetch('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json');
+            const geoData = await geoResponse.json();
+            console.log('✓ GeoJSON loaded:', geoData.features.length, 'features');
+
+            // FIPS state code to abbreviation mapping
+            const fipsToAbbrev = {
+                '01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA',
+                '08': 'CO', '09': 'CT', '10': 'DE', '11': 'DC', '12': 'FL',
+                '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN',
+                '19': 'IA', '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME',
+                '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN', '28': 'MS',
+                '29': 'MO', '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH',
+                '34': 'NJ', '35': 'NM', '36': 'NY', '37': 'NC', '38': 'ND',
+                '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI',
+                '45': 'SC', '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT',
+                '50': 'VT', '51': 'VA', '53': 'WA', '54': 'WV', '55': 'WI',
+                '56': 'WY', '72': 'PR', '78': 'VI'
+            };
+
+            // Color function based on cluster
+            function getColor(cluster) {
+                return cluster === 1 ? '#de2d26' : '#9ecae1';  // Red for high, blue for baseline
+            }
+
+            let matchedCount = 0;
+
+            // Style function
+            function style(feature) {
+                const stateCode = String(feature.properties.STATE).padStart(2, '0');
+                const stateAbbrev = fipsToAbbrev[stateCode] || '';
+                const countyName = feature.properties.NAME || feature.properties.COUNTY || '';
+
+                const key = `${stateAbbrev}|${countyName}`;
+                const countyData = countyLookup[key];
+
+                if (countyData) matchedCount++;
+
+                return {
+                    fillColor: countyData ? getColor(countyData.cluster) : '#e0e0e0',
+                    weight: 1,
+                    opacity: 0.8,
+                    color: '#666',
+                    fillOpacity: countyData ? 0.75 : 0.2
+                };
+            }
+
+            // Add GeoJSON layer
+            L.geoJSON(geoData, {
+                style: style,
+                onEachFeature: function (feature, layer) {
+                    const stateCode = String(feature.properties.STATE).padStart(2, '0');
+                    const stateAbbrev = fipsToAbbrev[stateCode] || '';
+                    const countyName = feature.properties.NAME || feature.properties.COUNTY || '';
+                    const key = `${stateAbbrev}|${countyName}`;
+                    const countyData = countyLookup[key];
+
+                    if (countyData) {
+                        layer.bindTooltip(`
+                            <div style="font-family: var(--font-sans);">
+                                <strong style="color: #de2d26; font-size: 14px;">${countyData.county}, ${countyData.state}</strong><br>
+                                <span style="font-size: 13px; color: var(--color-text-secondary);">
+                                    <strong>Vulnerability:</strong> ${countyData.risk_label}<br>
+                                    <strong>Cluster:</strong> ${countyData.cluster === 1 ? 'High Vulnerability' : 'Baseline'}
+                                </span>
+                            </div>
+                        `, { sticky: true });
+
+                        layer.on('mouseover', function () {
+                            this.setStyle({
+                                weight: 2,
+                                color: '#fff',
+                                fillOpacity: 0.9
+                            });
+                        });
+
+                        layer.on('mouseout', function () {
+                            this.setStyle(style(feature));
+                        });
+                    }
+                }
+            }).addTo(map);
+
+            console.log('✓ Map rendered - matched', matchedCount, 'counties');
+
+        } catch (error) {
+            console.error('❌ Error loading map:', error);
+            document.getElementById('priority-counties-container').innerHTML = 
+                '<div style="padding: 1rem; color: var(--color-alert);">Error loading data. Check console (F12).</div>';
+        }
+    });
+</script>
+
+{% endblock %}

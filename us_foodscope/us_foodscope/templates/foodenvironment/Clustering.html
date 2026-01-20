@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Food Environment Clustering</h2>
+    <p class="page-description">Group counties by food outlet composition</p>
+</div>
+
+<div class="prediction-container">
+    <form class="prediction-form" aria-label="Food environment clustering form" id="clustering-form">
+        <div class="form-group">
+            <label for="ffrpth09-input">The Variance in Fast Food Restaurant Counts (2009-2014)</label>
+            <input type="number" id="ffrpth09-input" placeholder="Enter value" step="0.01" aria-required="true">
+        </div>
+        <div class="form-group">
+            <label for="grocpth09-input">The Variance in Full-Service Restaurant Counts (2009-2014)</label>
+            <input type="number" id="grocpth09-input" placeholder="Enter value" step="0.01" aria-required="true">
+        </div>
+        <div class="form-group">
+            <label for="fsrpth09-input">The Variance in Grocery Store Counts (2009-2014)</label>
+            <input type="number" id="fsrpth09-input" placeholder="Enter value" step="0.01" aria-required="true">
+        </div>
+        <button type="button" class="submit-btn" id="cluster-btn">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <polyline points="12 5 12 19"></polyline>
+                <polyline points="5 12 19 12"></polyline>
+            </svg>
+            Assign to Cluster
+        </button>
+    </form>
+
+    <div class="result-container" id="clustering-result" style="display: none;" role="region" aria-live="polite"
+        aria-label="Clustering results">
+        <h3>
+            <svg class="result-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z">
+                </path>
+            </svg>
+            County Cluster Assignment
+        </h3>
+        <div class="result-content">
+            <p id="clustering-result-text"></p>
+            <div id="cluster-details" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #f4c430;
+        padding-bottom: 1rem;
+    }
+
+    .page-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1b5e20;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .page-description {
+        font-size: 1rem;
+        color: #666;
+        margin: 0;
+    }
+
+    .prediction-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .prediction-form {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        height: fit-content;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group input {
+        padding: 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #1b5e20;
+        box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 0.875rem;
+        background-color: #1b5e20;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: background-color 0.3s ease;
+        margin-top: 1.5rem;
+    }
+
+    .submit-btn:hover {
+        background-color: #145a1c;
+    }
+
+    .submit-btn:active {
+        transform: scale(0.98);
+    }
+
+    .icon-sm {
+        width: 20px;
+        height: 20px;
+    }
+
+    .result-container {
+        background: #f5f5f5;
+        border-left: 4px solid #1b5e20;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        display: none;
+    }
+
+    .result-container.show {
+        display: block;
+    }
+
+    .result-container h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0 0 1rem 0;
+        color: #1b5e20;
+        font-size: 1.1rem;
+    }
+
+    .result-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .result-content {
+        font-size: 1rem;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .result-content p {
+        margin: 0;
+    }
+
+    #cluster-details {
+        font-size: 0.95rem;
+        color: #555;
+    }
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<script>
+    // Get the API URL from Django settings via template
+    const API_URL = "{{ clustering_api_url }}";
+    
+    document.getElementById('cluster-btn').addEventListener('click', function() {
+        const ffrpth09 = parseFloat(document.getElementById('ffrpth09-input').value);
+        const grocpth09 = parseFloat(document.getElementById('grocpth09-input').value);
+        const fsrpth09 = parseFloat(document.getElementById('fsrpth09-input').value);
+
+        // Validation
+        if (isNaN(ffrpth09) || isNaN(grocpth09) || isNaN(fsrpth09)) {
+            alert('Please fill in all fields with valid numbers');
+            return;
+        }
+
+        // Disable button during request
+        const btn = document.getElementById('cluster-btn');
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true" style="animation: spin 1s linear infinite;">
+                <polyline points="12 5 12 19"></polyline>
+                <polyline points="5 12 19 12"></polyline>
+            </svg>
+            Loading...
+        `;
+
+        // Call FastAPI endpoint
+        fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                FFRPTH09: ffrpth09,
+                GROCPTH09: grocpth09,
+                FSRPTH09: fsrpth09
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayResult(data.cluster_name, data.cluster, data.description);
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to connect to the clustering service.');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
+    });
+
+    function displayResult(clusterName, clusterNumber, description) {
+        document.getElementById('clustering-result-text').textContent = 
+            `This county belongs to: Cluster ${clusterNumber} - ${clusterName}`;
+        
+        const details = document.getElementById('cluster-details');
+        details.innerHTML = `
+            <strong>Cluster Number:</strong> ${clusterNumber}<br><br>
+            <strong>Cluster Name:</strong> ${clusterName}<br><br>
+            <strong>Characteristics:</strong> ${description}
+        `;
+        
+        document.getElementById('clustering-result').style.display = 'block';
+        document.getElementById('clustering-result').scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+{% endblock %}

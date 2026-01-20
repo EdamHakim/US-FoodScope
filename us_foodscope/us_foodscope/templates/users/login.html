@@ -1,0 +1,234 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - US FoodScope</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0d6e3a 0%, #04562f 50%, #033620 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(206, 180, 8, 0.1) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .login-container {
+            background: #ffffff;
+            border: 3px solid #ceb408;
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(206, 180, 8, 0.2);
+            animation: fadeIn 0.6s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid #ceb408;
+            padding-bottom: 1.5rem;
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            color: #04562f;
+            letter-spacing: -0.5px;
+        }
+
+        .login-header p {
+            color: #666666;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #000000;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: #ffffff;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 6px;
+            color: #000000;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .form-control::placeholder {
+            color: #666666;
+        }
+
+        .form-control:hover {
+            border-color: #04562f;
+            background-color: rgba(4, 86, 47, 0.02);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #04562f;
+            box-shadow: 0 0 0 3px rgba(4, 86, 47, 0.15);
+            background: #ffffff;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #04562f 0%, #033620 100%);
+            border: 2px solid transparent;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(4, 86, 47, 0.3);
+            border-color: #ceb408;
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(4, 86, 47, 0.15);
+        }
+
+        .error-message {
+            background: rgba(193, 18, 31, 0.1);
+            border: 1px solid rgba(193, 18, 31, 0.3);
+            color: #c1121f;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .brand-indicator {
+            width: 8px;
+            height: 8px;
+            background: #ceb408;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1><span class="brand-indicator"></span>Welcome Back</h1>
+            <p>Sign in to access your dashboard</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="error-message">
+            Invalid username or password. Please try again.
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username" class="form-label">Username</label>
+                <input type="text" name="username" id="id_username" class="form-control"
+                    placeholder="Enter your username" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="id_password" class="form-label">Password</label>
+                <input type="password" name="password" id="id_password" class="form-control"
+                    placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+    </div>
+</body>
+
+</html>

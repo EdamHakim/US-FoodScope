@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/access_dashboard.css' %}">
+
+<div class="page-header">
+    <h2>Access Clustering</h2>
+    <p class="page-description">Explore clustering patterns based on access-related indicators.</p>
+</div>
+
+<div class="dashboard-grid" style="grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+
+    <!-- LEFT: FORM -->
+    <div class="input-panel">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Clustering Parameters</h3>
+            </div>
+
+            <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 0.25rem;">
+                Fill in all values and click “Run Clustering”.
+            </p>
+
+            <form method="post" style="margin-top: 1rem;">
+                {% csrf_token %}
+
+                <div class="grid-form">
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label>{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- ✅ BUTTONS ROW -->
+                <div style="display:flex; gap: 12px; margin-top: 1.5rem;">
+                    <!-- RUN -->
+                    <button type="submit" class="submit-btn" style="flex: 1;">
+                        + RUN CLUSTERING
+                    </button>
+
+                    <!-- CLEAR -->
+                    <a href="{% url 'access:clustering_clear' %}"
+                       class="submit-btn"
+                       style="
+                            flex: 0;
+                            width: 140px;
+                            background: transparent;
+                            color: var(--color-primary);
+                            border: 2px solid var(--color-primary);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            text-decoration: none;
+                            font-weight: 800;
+                       ">
+                        CLEAR
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div class="insights-panel" style="display:flex; flex-direction:column; gap:1rem;">
+
+        {% if error_message %}
+        <div class="card result-card" style="border-color: var(--color-alert); background: #fef2f2;">
+            <div class="card-header">
+                <h3 class="card-title" style="color: var(--color-alert);">Error</h3>
+            </div>
+            <p style="margin-top: 0.5rem; color: var(--color-text-secondary);">{{ error_message }}</p>
+        </div>
+        {% endif %}
+
+        <div class="card result-card">
+            <div class="card-header">
+                <h3 class="card-title">Cluster Result</h3>
+            </div>
+
+            {% if cluster is not None %}
+                <div style="text-align:center; padding: 1.25rem 0;">
+                    <div style="font-size: 13px; color: var(--color-text-muted); font-weight:600;">
+                        Cluster ID
+                    </div>
+
+                    <div style="font-size: 48px; font-weight: 800; color: var(--color-primary); margin-top: 0.5rem;">
+                        {{ cluster }}
+                    </div>
+
+                    <div style="font-size: 13px; color: var(--color-text-muted); font-weight:600; margin-top: 1rem;">
+                        Cluster Name
+                    </div>
+
+                    <div style="font-size: 18px; font-weight: 800; color: var(--color-primary-dark); margin-top: 0.25rem;">
+                        {{ cluster_label }}
+                    </div>
+                </div>
+            {% else %}
+                <div style="padding: 1rem; color: var(--color-text-secondary); font-size: 13px;">
+                    <ul style="padding-left: 1.2rem; line-height: 1.8;">
+                        <li>Enter valid numeric values in all fields</li>
+                        <li>Press the button to assign a cluster group</li>
+                        <li>Clustering uses Scaler → PCA → KMeans models</li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

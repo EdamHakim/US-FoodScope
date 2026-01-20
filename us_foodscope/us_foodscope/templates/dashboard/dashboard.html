@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Added accessibility attributes and improved page structure -->
+<div class="page-header">
+    <h2>Dashboard</h2>
+    <p class="page-description">Real-time Business Intelligence Overview</p>
+</div>
+{% if has_permission %}
+<div class="dashboard-container">
+    <div class="power-bi-embed">
+        <iframe title="{{ user.role }}" width="1140" height="541.25" src="{{ iframe_url }}" frameborder="0"
+            allowFullScreen="true"></iframe>
+    </div>
+</div>
+{% else %}
+<div class="dashboard-container">
+    <div class="alert alert-danger"
+        style="text-align: center; padding: 2rem; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.2); border-radius: 0.5rem; color: #fca5a5;">
+        <h3>Access Denied</h3>
+        <p>Your user role ({{ user.get_role_display }}) does not have an assigned dashboard.</p>
+        <p>Please contact your administrator if you believe this is an error.</p>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

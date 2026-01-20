@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex" style="min-height: calc(100vh - 56px);">
+    <!-- Sidebar -->
+    <nav class="sidebar bg-dark text-white p-4" style="width: 250px; position: fixed; left: 0; top: 56px; height: calc(100vh - 56px); overflow-y: auto;">
+        <div class="mb-4">
+            <h5 class="text-uppercase text-muted small">Local Food Analysis</h5>
+            <hr class="bg-secondary">
+        </div>
+        
+        <ul class="nav flex-column gap-2">
+            <li class="nav-item">
+                <a class="nav-link {% if 'regression' in request.path %}active bg-primary rounded{% endif %}" 
+                   href="{% url 'local_regression' %}">
+                    <i class="fas fa-chart-line me-2"></i>Regression Prediction
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'clustering' in request.path %}active bg-success rounded{% endif %}" 
+                   href="{% url 'local_clustering' %}">
+                    <i class="fas fa-cube me-2"></i>Clustering Analysis
+                </a>
+            </li>
+        </ul>
+
+        <hr class="bg-secondary mt-4">
+        
+        <div class="small text-muted mt-4">
+            <p>
+                <strong>Features:</strong><br>
+                • 12 input parameters<br>
+                • XGBoost & K-Means<br>
+                • Real-time predictions
+            </p>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow-1" style="margin-left: 250px;">
+        <div class="container-fluid p-4">
+            {% block local_content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<style>
+.sidebar {
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.7) !important;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    color: white !important;
+    font-weight: 600;
+}
+
+/* Responsive sidebar */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+    
+    main {
+        margin-left: 200px !important;
+    }
+}
+</style>
+{% endblock %}

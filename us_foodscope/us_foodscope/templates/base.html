@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US FoodScope</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Updated navbar with modern dark design -->
+        <nav class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <h1>US FoodScope</h1>
+                </div>
+                <div class="navbar-user">
+                    <span class="user-role">{{ user.get_role_display }}</span>
+                    <a href="{% url 'login' %}" class="logout-btn" style="text-decoration: none;">Logout</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="main-wrapper">
+            <!-- Refined sidebar with updated styling -->
+            <aside class="sidebar">
+                <nav class="sidebar-nav">
+                    <a href="{% url 'dashboard' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                        aria-label="Dashboard">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        Dashboard
+                    </a>
+
+                    <div class="nav-section-title">Predictions</div>
+
+                    {% if user.can_access_access %}
+                    <div class="nav-dropdown">
+                        <div class="nav-item nav-dropdown-trigger" aria-label="Access Services" role="button"
+                            tabindex="0">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path
+                                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                                </path>
+                            </svg>
+                            Access
+                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+
+                        <div class="nav-dropdown-menu">
+                            <a href="{% url 'access:prediction' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'prediction' %}active{% endif %}">
+                                Prediction
+                            </a>
+
+                            <a href="{% url 'access:clustering' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'clustering' %}active{% endif %}">
+                                Clustering
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+     {% if user.can_access_insecurity %}
+<div class="nav-dropdown">
+    <div class="nav-item nav-dropdown-trigger" aria-label="Food Insecurity" role="button" tabindex="0">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+            </path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        Food Insecurity
+        <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    </div>
+
+    <div class="nav-dropdown-menu">
+        <a href="{% url 'insecurity' %}"
+           class="nav-dropdown-item {% if request.resolver_match.url_name == 'insecurity' %}active{% endif %}">
+            Prediction
+        </a>
+
+        <a href="{% url 'food_clustering' %}"
+           class="nav-dropdown-item {% if request.resolver_match.url_name == 'food_clustering' %}active{% endif %}">
+            Clustering
+        </a>
+    </div>
+</div>
+{% endif %}
+
+                    {% if user.can_access_health %}
+                    <div class="nav-dropdown">
+                        <div class="nav-item nav-dropdown-trigger" aria-label="Health Services" role="button"
+                            tabindex="0">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                            </svg>
+                            Health
+                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="nav-dropdown-menu">
+                            <a href="{% url 'health' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'health' %}active{% endif %}">
+                                Predictions
+                            </a>
+                            <a href="{% url 'health_clustering' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'health_clustering' %}active{% endif %}">
+                                Clustering
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!--{% if user.can_access_finance %}
+                    <a href="{% url 'finance' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'finance' %}active{% endif %}"
+                        aria-label="Finance Prediction">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                        Finance
+                    </a>
+                    {% endif %}-->
+                    {% if user.can_access_finance %}
+                    <div class="nav-dropdown">
+                        <div class="nav-item nav-dropdown-trigger" aria-label="Finance Services" role="button"
+                            tabindex="0">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                            Finance
+                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="nav-dropdown-menu">
+                            <a href="{% url 'finance' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'finance' %}active{% endif %}">
+                                Predictions
+                            </a>
+                            <a href="{% url 'finance_clustering' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'finance_clustering' %}active{% endif %}"> 
+                                Clustering
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+{% if user.can_access_local %}
+                    <div class="nav-dropdown">
+                        <div class="nav-item nav-dropdown-trigger" aria-label="Local Analysis" role="button"
+                            tabindex="0">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            Local
+                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="nav-dropdown-menu">
+                            <a href="{% url 'local_regression' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'local_regression' %}active{% endif %}">
+                                Regression
+                            </a>
+                            <a href="{% url 'local_clustering' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'local_clustering' %}active{% endif %}">
+                                Clustering
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if user.can_access_food_env %}
+                    <div class="nav-dropdown">
+                        <div class="nav-item nav-dropdown-trigger" aria-label="Food Environment" role="button"
+                            tabindex="0">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 3h18v18H3zM21 9H3M21 15H3M12 3v18"></path>
+                            </svg>
+                            Food Environment
+                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="nav-dropdown-menu">
+                            <a href="{% url 'food_env' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'food_env' %}active{% endif %}">
+                                Predictions
+                            </a>
+                            <a href="{% url 'food_env_clustering' %}"
+                                class="nav-dropdown-item {% if request.resolver_match.url_name == 'food_env_clustering' %}active{% endif %}">
+                                Clustering
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="content">
+                <div id="page-content">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Dropdown toggle functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownTriggers = document.querySelectorAll('.nav-dropdown-trigger');
+
+            dropdownTriggers.forEach(trigger => {
+                trigger.addEventListener('click', function () {
+                    const dropdown = this.parentElement;
+                    dropdown.classList.toggle('active');
+                });
+
+                // Keyboard accessibility
+                trigger.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        const dropdown = this.parentElement;
+                        dropdown.classList.toggle('active');
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="{% static 'js/chatbot.js' %}"></script>
+</body>
+
+
+</html>

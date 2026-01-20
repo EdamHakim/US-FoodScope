@@ -1,0 +1,12 @@
+--- Inspecting clustering_scaler.joblib ---
+Type: <class 'sklearn.preprocessing._data.StandardScaler'>
+Feature Names In: ['Adult_Diabetes_Rate_08', 'Adult_Diabetes_Rate13', 'Adult_Obesity_Rate_08', 'Adult_Obesity_Rate13', 'GYMs_Per_1000_Count_14', 'Farmers_Markets_Count_16', 'GROCPTH09']
+N Features In: 7
+Scaler Mean (first 5): [ 9.90242164 11.20022472 29.01483631 31.08683788  0.06783991]
+--- Inspecting kmeans_health_model.joblib ---
+Type: <class 'sklearn.cluster._kmeans.KMeans'>
+No 'feature_names_in_' attribute.
+N Features In: 7
+Cluster Centers Shape: (4, 7)
+--- Inspecting kmeans_model.joblib ---
+File not found.

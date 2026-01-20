@@ -1,0 +1,46 @@
+{
+  "population_density": {
+    "display_name": "Population Density",
+    "description": "Number of people per square mile",
+    "type": "numeric",
+    "min": 0,
+    "max": 10000,
+    "unit": "people/sq mi"
+  },
+  "median_income": {
+    "display_name": "Median Household Income",
+    "description": "Median income of households in the area",
+    "type": "numeric",
+    "min": 15000,
+    "max": 250000,
+    "unit": "USD"
+  },
+  "poverty_rate": {
+    "display_name": "Poverty Rate",
+    "description": "Percentage of population below poverty line",
+    "type": "numeric",
+    "min": 0,
+    "max": 100,
+    "unit": "%"
+  },
+  "food_access_index": {
+    "display_name": "Food Access Index",
+    "description": "Index measuring food accessibility (0-1)",
+    "type": "numeric",
+    "min": 0,
+    "max": 1,
+    "unit": "score"
+  },
+  "region_type": {
+    "display_name": "Region Type",
+    "description": "Classification of geographic region",
+    "type": "categorical",
+    "categories": ["urban", "suburban", "rural"]
+  },
+  "food_environment": {
+    "display_name": "Food Environment Quality",
+    "description": "Quality of local food environment",
+    "type": "categorical",
+    "categories": ["poor", "fair", "good", "excellent"]
+  }
+}

@@ -1,0 +1,95 @@
+State,County,Cluster,risk_label,risk_color
+AL,Macon,0,Baseline,baseline
+AL,Mobile,0,Baseline,baseline
+AK,Southeast Fairbanks Census Area,0,Baseline,baseline
+KY,Grant,0,Baseline,baseline
+KY,Hopkins,0,Baseline,baseline
+KY,McLean,0,Baseline,baseline
+KY,Mason,0,Baseline,baseline
+AZ,Greenlee,1,High Structural Food Access Vulnerability,high
+OR,Curry,0,Baseline,baseline
+OR,Wallowa,0,Baseline,baseline
+AR,Baxter,1,High Structural Food Access Vulnerability,high
+AR,Garland,1,High Structural Food Access Vulnerability,high
+AR,Grant,0,Baseline,baseline
+AR,Logan,0,Baseline,baseline
+VA,Giles,0,Baseline,baseline
+VA,Hanover,0,Baseline,baseline
+VA,James City,0,Baseline,baseline
+VA,Mathews,0,Baseline,baseline
+CT,New Haven,0,Baseline,baseline
+GA,Atkinson,0,Baseline,baseline
+GA,Bacon,0,Baseline,baseline
+GA,Johnson,0,Baseline,baseline
+GA,Spalding,0,Baseline,baseline
+GA,Stewart,0,Baseline,baseline
+HI,Kalawao,0,Baseline,baseline
+FL,Bay,0,Baseline,baseline
+FL,Hamilton,0,Baseline,baseline
+FL,Levy,0,Baseline,baseline
+ID,Canyon,0,Baseline,baseline
+IL,Clinton,0,Baseline,baseline
+IL,Lawrence,0,Baseline,baseline
+IL,Schuyler,0,Baseline,baseline
+IL,Stephenson,0,Baseline,baseline
+IL,Vermilion,0,Baseline,baseline
+IL,White,0,Baseline,baseline
+IN,Adams,0,Baseline,baseline
+IN,Daviess,0,Baseline,baseline
+KY,Carlisle,0,Baseline,baseline
+KS,Dickinson,1,High Structural Food Access Vulnerability,high
+KS,Jewell,1,High Structural Food Access Vulnerability,high
+KS,Jewell,0,Baseline,baseline
+IA,Jasper,0,Baseline,baseline
+IA,Muscatine,0,Baseline,baseline
+LA,Bossier Parish,0,Baseline,baseline
+LA,Caldwell Parish,0,Baseline,baseline
+LA,Cameron Parish,0,Baseline,baseline
+LA,Concordia Parish,0,Baseline,baseline
+LA,Iberia Parish,0,Baseline,baseline
+LA,St. John the Baptist Parish,0,Baseline,baseline
+MA,Bristol,0,Baseline,baseline
+MD,St. Mary's,0,Baseline,baseline
+MI,St. Clair,0,Baseline,baseline
+MO,Atchison,0,Baseline,baseline
+MO,Dallas,0,Baseline,baseline
+MO,Iron,0,Baseline,baseline
+MO,Pulaski,0,Baseline,baseline
+MO,Wright,0,Baseline,baseline
+NE,Garfield,1,High Structural Food Access Vulnerability,high
+NJ,Essex,0,Baseline,baseline
+MN,Carver,0,Baseline,baseline
+MN,Chisago,0,Baseline,baseline
+MN,Faribault,0,Baseline,baseline
+MN,Itasca,0,Baseline,baseline
+MN,Lincoln,0,Baseline,baseline
+MN,Pipestone,0,Baseline,baseline
+MN,Todd,0,Baseline,baseline
+MS,Amite,0,Baseline,baseline
+MS,Sunflower,0,Baseline,baseline
+MS,Warren,0,Baseline,baseline
+NM,Chaves,0,Baseline,baseline
+NM,Lincoln,0,Baseline,baseline
+NY,Westchester,0,Baseline,baseline
+NC,Orange,0,Baseline,baseline
+ND,Benson,0,Baseline,baseline
+ND,Mercer,0,Baseline,baseline
+OK,Beaver,0,Baseline,baseline
+OK,Pawnee,0,Baseline,baseline
+OK,Stephens,0,Baseline,baseline
+PA,Warren,0,Baseline,baseline
+SC,Chesterfield,0,Baseline,baseline
+SC,Dillon,0,Baseline,baseline
+SC,Hampton,0,Baseline,baseline
+SC,Pickens,0,Baseline,baseline
+TN,Benton,0,Baseline,baseline
+TN,Hamilton,0,Baseline,baseline
+TN,Perry,0,Baseline,baseline
+TX,Angelina,0,Baseline,baseline
+TX,Dallas,0,Baseline,baseline
+TX,Howard,0,Baseline,baseline
+TX,Montague,0,Baseline,baseline
+TX,San Patricio,0,Baseline,baseline
+TX,Sutton,0,Baseline,baseline
+TX,Williamson,0,Baseline,baseline
+VT,Grand Isle,0,Baseline,baseline

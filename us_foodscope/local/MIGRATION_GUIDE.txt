@@ -1,0 +1,26 @@
+"""
+Migration setup guide for Local Food module
+"""
+
+# After adding the RegressionPredictionHistory model:
+# 
+# 1. Create migration files:
+#    python manage.py makemigrations local
+#
+# 2. View what will be migrated:
+#    python manage.py showmigrations local
+#
+# 3. Apply migrations:
+#    python manage.py migrate local
+#
+# 4. Verify:
+#    python manage.py showmigrations local
+#    # Should show: [X] 0001_initial
+#
+# If you need to rollback:
+#    python manage.py migrate local zero
+#
+# For Django shell inspection:
+#    python manage.py shell
+#    >>> from local.models import RegressionPredictionHistory
+#    >>> RegressionPredictionHistory.objects.all()

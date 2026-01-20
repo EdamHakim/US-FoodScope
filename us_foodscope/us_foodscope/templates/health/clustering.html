@@ -1,0 +1,737 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Page Header with enhanced styling -->
+<div class="page-header" style="margin-bottom: 1.5rem;">
+    <h2>Health Risk Clustering</h2>
+    <p class="page-description">Geographic analysis of high-risk counties based on composite health indicators. Identify
+        priority areas for intervention and resource allocation.</p>
+</div>
+
+<!-- KPI Summary Row -->
+<div class="kpi-grid">
+    <div class="card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+        <div
+            style="width: 52px; height: 52px; background: rgba(4, 86, 47, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--color-primary)" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--color-primary); line-height: 1;"
+                id="county-count">-</div>
+            <div
+                style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin-top: 0.25rem;">
+                Risk Counties</div>
+        </div>
+    </div>
+    <div class="card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+        <div
+            style="width: 52px; height: 52px; background: rgba(193, 18, 31, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--color-alert)" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--color-alert); line-height: 1;" id="max-risk">-
+            </div>
+            <div
+                style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin-top: 0.25rem;">
+                Highest Risk</div>
+        </div>
+    </div>
+    <div class="card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+        <div
+            style="width: 52px; height: 52px; background: rgba(4, 86, 47, 0.08); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--color-primary)" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--color-primary); line-height: 1;" id="avg-risk">-
+            </div>
+            <div
+                style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin-top: 0.25rem;">
+                Average Risk</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="main-layout">
+    <!-- LEFT: Map Visualization -->
+    <div class="input-panel">
+        <div class="card" style="height: 100%;">
+            <div class="card-header" style="border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+                <h3 class="card-title">
+                    <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    County Risk Distribution Map
+                </h3>
+            </div>
+
+            <div id="map" class="map-container">
+            </div>
+
+            <!-- Legend Bar -->
+            <div class="legend-bar">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span
+                        style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Risk
+                        Level:</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div
+                            style="width: 24px; height: 16px; background: #fdd2c0; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1);">
+                        </div>
+                        <span style="font-size: 12px; color: var(--color-text-secondary);">Low</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div
+                            style="width: 24px; height: 16px; background: #fc9272; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1);">
+                        </div>
+                        <span style="font-size: 12px; color: var(--color-text-secondary);">Medium</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div
+                            style="width: 24px; height: 16px; background: #de2d26; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1);">
+                        </div>
+                        <span style="font-size: 12px; color: var(--color-text-secondary);">High</span>
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: var(--color-text-muted);">
+                    <em>Hover over counties for details</em>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Priority Counties (Moved from Right Panel) -->
+    <div class="card">
+        <div class="card-header" style="border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+            <h3 class="card-title" style="color: var(--color-alert);">
+                <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Priority Counties
+            </h3>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.75rem;">
+            <p style="font-size: 16px; color: var(--color-text-muted); flex: 1;">Top 5 counties requiring
+                immediate attention based on composite risk score.</p>
+        </div>
+
+        <div id="top-counties-container" class="priority-grid">
+            <div style="text-align: center; padding: 2rem; color: var(--color-text-muted); width: 100%;">
+                <div style="font-size: 24px; margin-bottom: 0.5rem;">⏳</div>
+                Loading data...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RIGHT: Insights Panel -->
+<div class="insights-panel" style="display: flex; flex-direction: column; gap: 1.75rem;">
+
+    <!-- Clustering Prediction Form -->
+    <div class="card">
+        <div class="card-header" style="border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+            <h3 class="card-title">
+                <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Predict Cluster
+            </h3>
+        </div>
+        <div style="padding: 1rem 0;">
+            <p style="font-size: 16px; color: var(--color-text-secondary); margin-bottom: 1rem;">
+                Input county metrics to predict its health risk cluster.
+            </p>
+
+            {% if error_message %}
+            <div
+                style="padding: 0.75rem; background: rgba(193, 18, 31, 0.1); border-left: 3px solid var(--color-alert); color: var(--color-alert); font-size: 13px; margin-bottom: 1rem; border-radius: 4px;">
+                {{ error_message }}
+            </div>
+            {% endif %}
+
+            {% if cluster_result is not None %}
+            <div
+                style="padding: 1rem; background: rgba(4, 86, 47, 0.1); border: 1px solid rgba(4, 86, 47, 0.2); border-radius: 8px; text-align: center; margin-bottom: 1rem;">
+                <div
+                    style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-secondary);">
+                    Predicted Cluster</div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--color-primary);">{{ cluster_result }}
+                </div>
+                {% if cluster_desc %}
+                <div style="font-size: 16px; color: var(--color-primary); margin-top: 0.25rem;">{{ cluster_desc }}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+
+
+            <form method="post" class="prediction-form" aria-label="Clustering prediction form">
+                {% csrf_token %}
+
+                <!-- Section 1: Diabetes Indicators -->
+                <div class="form-section">
+                    <h4 class="form-section-title">Diabetes Indicators</h4>
+                    <div class="grid-row">
+                        <div class="form-group">
+                            {{ form.Adult_Diabetes_Rate_08.label_tag }}
+                            {{ form.Adult_Diabetes_Rate_08 }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.Adult_Diabetes_Rate13.label_tag }}
+                            {{ form.Adult_Diabetes_Rate13 }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Obesity Indicators -->
+                <div class="form-section">
+                    <h4 class="form-section-title">Obesity Indicators</h4>
+                    <div class="grid-row">
+                        <div class="form-group">
+                            {{ form.Adult_Obesity_Rate_08.label_tag }}
+                            {{ form.Adult_Obesity_Rate_08 }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.Adult_Obesity_Rate13.label_tag }}
+                            {{ form.Adult_Obesity_Rate13 }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Food Environment -->
+                <div class="form-section">
+                    <h4 class="form-section-title">Food Environment & Access</h4>
+                    <div class="form-group">
+                        {{ form.GROCPTH09.label_tag }}
+                        {{ form.GROCPTH09 }}
+                    </div>
+                    <div class="grid-row">
+                        <div class="form-group">
+                            {{ form.GYMs_Per_1000_Count_14.label_tag }}
+                            {{ form.GYMs_Per_1000_Count_14 }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.Farmers_Markets_Count_16.label_tag }}
+                            {{ form.Farmers_Markets_Count_16 }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 2rem;">
+                    <button type="submit" class="submit-btn">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Run Prediction
+                    </button>
+                    <button type="reset" class="reset-btn" onclick="document.querySelector('.prediction-form').reset()">
+                        Clear
+                    </button>
+                </div>
+            </form>
+
+            <style>
+                /* --- FORM STRUCTURE & LAYOUT --- */
+                .prediction-form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+
+                .form-section {
+                    background: #f9fafb;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    border: 1px solid var(--color-border);
+                }
+
+                .form-section-title {
+                    font-size: 1rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: var(--color-primary);
+                    margin-bottom: 1rem;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+                    padding-bottom: 0.5rem;
+                }
+
+
+
+                .grid-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1rem;
+                }
+
+                .form-group {
+                    margin-bottom: 0.5rem;
+                }
+
+                /* Input & Label Styling */
+                .prediction-form label {
+                    display: block;
+                    margin-bottom: 0.375rem;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: var(--color-text);
+                }
+
+                .prediction-form input[type="number"],
+                .prediction-form select {
+                    width: 100%;
+                    padding: 0.625rem;
+                    border: 1px solid #d1d5db;
+                    border-radius: 0.375rem;
+                    font-size: 0.95rem;
+                    background-color: #ffffff;
+                    color: #111827;
+                    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+                }
+
+                .prediction-form input[type="number"]:focus,
+                .prediction-form select:focus {
+                    outline: none;
+                    border-color: var(--color-primary);
+                    box-shadow: 0 0 0 3px rgba(4, 86, 47, 0.1);
+                    /* Primary color with opacity */
+                }
+
+                .prediction-form input[type="number"]::placeholder {
+                    color: #9ca3af;
+                    font-size: 0.9rem;
+                }
+
+                /* Buttons */
+                .form-actions {
+                    display: flex;
+                    gap: 0.75rem;
+                }
+
+                .submit-btn {
+                    flex: 2;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    background-color: var(--color-primary);
+                    color: white;
+                    padding: 0.75rem;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                }
+
+                .submit-btn:hover {
+                    background-color: #034c2a;
+                    /* Darker shade of primary */
+                }
+
+                .reset-btn {
+                    flex: 1;
+                    background-color: white;
+                    color: var(--color-text-secondary);
+                    border: 1px solid #d1d5db;
+                    padding: 0.75rem;
+                    border-radius: 6px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .reset-btn:hover {
+                    background-color: #f3f4f6;
+                    border-color: #9ca3af;
+                }
+
+                /* --- CARD & PANEL VISUALS --- */
+                .card {
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                    border: 1px solid var(--color-border);
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                    background: white;
+                    border-radius: 0.5rem;
+                }
+
+                .card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.05);
+                }
+
+                /* Legend Styling */
+                .legend-bar {
+                    margin-top: 1rem;
+                    padding: 0.75rem 1rem;
+                    background: #ffffff;
+                    border: 1px solid var(--color-border);
+                    border-radius: 8px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 1rem;
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+                }
+
+                /* --- RESPONSIVE LAYOUT STYLES --- */
+
+                /* KPI Grid: 3 columns on desktop, 1 on mobile */
+                .kpi-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 1.75rem;
+                    margin-bottom: 1.75rem;
+                }
+
+                /* Priority Grid - Horizontal Layout */
+                .priority-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 1rem;
+                    margin-top: 1rem;
+                }
+
+                /* Main Layout: 2/3 Map, 1/3 Panel on desktop */
+                .main-layout {
+                    display: grid;
+                    grid-template-columns: 2fr 1fr;
+                    gap: 1.75rem;
+                    margin-bottom: 1.75rem;
+                }
+
+                /* Map Container height */
+                .map-container {
+                    height: 600px;
+                    border-radius: 8px;
+                    margin-top: 1rem;
+                    border: 1px solid var(--color-border);
+                    z-index: 1;
+                    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+                }
+
+                /* Tablet/Mobile Responsiveness */
+                @media (max-width: 1024px) {
+                    .main-layout {
+                        grid-template-columns: 1fr;
+                        /* Stack map and insights */
+                    }
+
+                    /* On tablet/mobile, we want the form to be more compact or multi-column if space permits */
+                    .prediction-form {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        /* 2 column form on tablet? */
+                    }
+
+                    .form-actions {
+                        grid-column: span 2;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .prediction-form {
+                        display: flex;
+                        /* Back to vertical stack on mobile */
+                    }
+
+                    .kpi-grid {
+                        grid-template-columns: 1fr;
+                        gap: 1rem;
+                    }
+
+                    .map-container {
+                        height: 400px;
+                    }
+
+                    /* Stack grid rows on very small screens if needed, strictly speaking 
+                       1fr 1fr works on most mobiles for short numbers, but safer to stack */
+                    .grid-row {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .card-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 0.5rem;
+                    }
+
+                    .page-header h2 {
+                        font-size: 1.5rem;
+                    }
+                }
+            </style>
+        </div>
+    </div>
+
+
+
+    <!-- Methodology Info -->
+    <div class="card">
+        <div class="card-header" style="border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+            <h3 class="card-title">
+                <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Methodology
+            </h3>
+        </div>
+        <div style="color: var(--color-text-secondary); line-height: 1.6; font-size: 13px;">
+            <p style="margin-bottom: 0.75rem;"><strong style="color: var(--color-primary);">Data:</strong>
+                Pre-computed clustering analysis combining obesity rates, diabetes prevalence, food insecurity, and
+                socioeconomic indicators.</p>
+            <p style="margin-bottom: 0.75rem;"><strong style="color: var(--color-primary);">Risk Score:</strong>
+                Composite metric normalized across all counties. Higher values indicate greater health risk.</p>
+            <p style="margin: 0;"><strong style="color: var(--color-primary);">Usage:</strong> Identify priority
+                areas for public health intervention and resource allocation.</p>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        console.log('=== CLUSTERING MAP INITIALIZATION ===');
+
+        // Initialize map
+        const map = L.map('map').setView([37.8, -96], 4);
+
+        // Add base tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        try {
+            // Fetch clustering data from our API
+            console.log('Fetching cluster data...');
+            const response = await fetch('{% url "health_clustering_api" %}');
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 100)}...`);
+            }
+
+            const clusterData = await response.json();
+
+            if (!clusterData || !clusterData.counties || clusterData.counties.length === 0) {
+                console.warn('⚠ No clustering data available from API');
+                document.getElementById('county-count').textContent = '0';
+                document.getElementById('max-risk').textContent = '0.00';
+                document.getElementById('avg-risk').textContent = '0.00';
+                document.getElementById('top-counties-container').innerHTML = '<div class="empty-state">No high-risk counties found in current dataset.</div>';
+                return; // Stop further processing but keep the map
+            }
+
+            console.log('✓ Cluster data loaded:', clusterData.counties.length, 'counties');
+            console.log('Sample county data:', clusterData.counties[0]);
+
+            // Update KPI statistics
+            const risks = clusterData.counties.map(c => c.risk);
+            const maxRisk = Math.max(...risks);
+            const minRisk = Math.min(...risks);
+            const avgRisk = risks.reduce((a, b) => a + b, 0) / risks.length;
+
+            document.getElementById('county-count').textContent = clusterData.counties.length;
+            document.getElementById('max-risk').textContent = maxRisk.toFixed(2);
+            document.getElementById('avg-risk').textContent = avgRisk.toFixed(2);
+
+            // Populate top 5 high-risk counties
+            const top5 = [...clusterData.counties].sort((a, b) => b.risk - a.risk).slice(0, 5);
+            const topCountiesHtml = top5.map((county, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; 
+                            background: ${index === 0 ? 'rgba(193, 18, 31, 0.1)' : 'rgba(0,0,0,0.02)'}; 
+                            border-radius: 6px; margin-bottom: 0.5rem;
+                            border-left: 3px solid ${index === 0 ? 'var(--color-alert)' : 'var(--color-primary)'};">
+                    <div>
+                        <div style="font-weight: 600; color: var(--color-text);">${county.county}, ${county.state}</div>
+                        <div style="font-size: 12px; color: var(--color-text-muted);">Cluster ${county.cluster}</div>
+                    </div>
+                    <div style="font-weight: 700; color: ${index === 0 ? 'var(--color-alert)' : 'var(--color-primary)'}; font-size: 14px;">
+                        ${county.risk.toFixed(2)}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('top-counties-container').innerHTML = topCountiesHtml;
+
+            // Fetch US Counties GeoJSON
+            console.log('Fetching GeoJSON...');
+            const geoResponse = await fetch('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json');
+            const geoData = await geoResponse.json();
+            console.log('✓ GeoJSON loaded:', geoData.features.length, 'features');
+
+            // Debug: Check GeoJSON structure
+            if (geoData.features.length > 0) {
+                console.log('Sample GeoJSON feature properties:', geoData.features[0].properties);
+            }
+
+            // FIPS state code to abbreviation mapping (GeoJSON uses numeric codes like '01', CSV uses 'AL')
+            const fipsToAbbrev = {
+                '01': 'al', '02': 'ak', '04': 'az', '05': 'ar', '06': 'ca',
+                '08': 'co', '09': 'ct', '10': 'de', '11': 'dc', '12': 'fl',
+                '13': 'ga', '15': 'hi', '16': 'id', '17': 'il', '18': 'in',
+                '19': 'ia', '20': 'ks', '21': 'ky', '22': 'la', '23': 'me',
+                '24': 'md', '25': 'ma', '26': 'mi', '27': 'mn', '28': 'ms',
+                '29': 'mo', '30': 'mt', '31': 'ne', '32': 'nv', '33': 'nh',
+                '34': 'nj', '35': 'nm', '36': 'ny', '37': 'nc', '38': 'nd',
+                '39': 'oh', '40': 'ok', '41': 'or', '42': 'pa', '44': 'ri',
+                '45': 'sc', '46': 'sd', '47': 'tn', '48': 'tx', '49': 'ut',
+                '50': 'vt', '51': 'va', '53': 'wa', '54': 'wv', '55': 'wi',
+                '56': 'wy', '72': 'pr', '78': 'vi'
+            };
+
+            // Create lookup from CSV data (keyed by "countyname, stateabbrev")
+            const countyLookup = {};
+            clusterData.counties.forEach(item => {
+                const countyClean = item.county.toLowerCase().trim().replace(/\s+/g, ' ');
+                const stateClean = item.state.toLowerCase().trim();
+
+                // Create lookup key using county name + state abbreviation
+                const key = `${countyClean}, ${stateClean}`;
+                countyLookup[key] = item;
+            });
+
+            console.log('✓ Created county lookup with', Object.keys(countyLookup).length, 'keys');
+            console.log('Sample lookup keys:', Object.keys(countyLookup).slice(0, 10));
+
+            // Find min/max risk for color scaling (reuse already computed values)
+            const maxRiskVal = maxRisk;
+            console.log('✓ Risk range:', minRisk.toFixed(3), 'to', maxRiskVal.toFixed(3));
+
+            // Color function: red gradient based on risk
+            function getColor(risk) {
+                if (!risk) return '#e0e0e0';
+
+                const normalized = (risk - minRisk) / (maxRiskVal - minRisk);
+
+                if (normalized < 0.33) return '#fdd2c0';
+                else if (normalized < 0.67) return '#fc9272';
+                else return '#de2d26';
+            }
+
+            let matchedCount = 0;
+            let unmatchedSamples = [];
+
+            // Style function for each county
+            function style(feature) {
+                let name = '';
+                let stateAbbrev = '';
+
+                // Get county name from GeoJSON
+                if (feature.properties.NAME) {
+                    name = feature.properties.NAME.toLowerCase().trim().replace(/\s+/g, ' ');
+                } else if (feature.properties.COUNTY) {
+                    name = feature.properties.COUNTY.toLowerCase().trim().replace(/\s+/g, ' ');
+                }
+
+                // Convert FIPS state code to abbreviation
+                const stateCode = feature.properties.STATE;
+                stateAbbrev = fipsToAbbrev[stateCode] || '';
+
+                // Create lookup key: "countyname, stateabbrev"
+                const key = `${name}, ${stateAbbrev}`;
+                const countyData = countyLookup[key];
+                const risk = countyData ? countyData.risk : null;
+
+                if (countyData) {
+                    matchedCount++;
+                } else if (unmatchedSamples.length < 5 && name && stateAbbrev) {
+                    unmatchedSamples.push({ name, stateAbbrev, stateCode, key });
+                }
+
+                return {
+                    fillColor: getColor(risk),
+                    weight: 1,
+                    opacity: 0.5,
+                    color: '#666',
+                    fillOpacity: risk ? 0.7 : 0.1
+                };
+            }
+
+            // Add GeoJSON layer
+            const geoLayer = L.geoJSON(geoData, {
+                style: style,
+                onEachFeature: function (feature, layer) {
+                    const name = feature.properties.NAME || feature.properties.COUNTY || 'Unknown';
+                    const stateCode = feature.properties.STATE;
+                    const stateAbbrev = fipsToAbbrev[stateCode] || '';
+
+                    const nameClean = name.toLowerCase().trim().replace(/\s+/g, ' ');
+                    const key = `${nameClean}, ${stateAbbrev}`;
+                    const countyData = countyLookup[key];
+
+                    if (countyData) {
+                        layer.bindTooltip(`
+                        <div style="font-family: var(--font-sans);">
+                            <strong style="color: var(--color-primary); font-size: 14px;">${countyData.county}, ${countyData.state}</strong><br>
+                            <span style="font-size: 13px; color: var(--color-text-secondary);">
+                                <strong>Risk Score:</strong> ${countyData.risk.toFixed(3)}<br>
+                                <strong>Cluster:</strong> ${countyData.cluster}
+                            </span>
+                        </div>
+                    `, { sticky: true });
+
+                        layer.on('mouseover', function () {
+                            this.setStyle({
+                                weight: 3,
+                                color: '#fff',
+                                fillOpacity: 0.9
+                            });
+                        });
+
+                        layer.on('mouseout', function () {
+                            this.setStyle(style(feature));
+                        });
+                    }
+                }
+            }).addTo(map);
+
+            console.log('✓ Map rendered');
+            console.log('✓ Matched counties:', matchedCount, 'out of', clusterData.counties.length);
+
+            if (unmatchedSamples.length > 0) {
+                console.warn('⚠ Sample unmatched counties:', unmatchedSamples);
+            }
+
+            if (matchedCount === 0) {
+                console.error('❌ NO COUNTIES MATCHED! Debugging info:');
+                console.error('First GeoJSON feature:', geoData.features[0]);
+                console.error('First CSV county:', clusterData.counties[0]);
+                console.error('Sample lookup key:', Object.keys(countyLookup)[0]);
+            }
+
+        } catch (error) {
+            console.error('❌ Error loading map data:', error);
+            alert('Failed to load clustering data. Check the console (F12) for details.');
+        }
+    });
+</script>
+
+{% endblock %}

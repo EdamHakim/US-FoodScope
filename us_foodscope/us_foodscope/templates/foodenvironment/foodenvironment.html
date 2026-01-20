@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<!-- Added SVG icons and ARIA attributes -->
+<div class="page-header">
+    <h2>Grocery Store Prediction Tool</h2>
+    <p class="page-description">Estimate the number of grocery stores in a US county based on key indicators</p>
+</div>
+<div class="prediction-container">
+    <form class="prediction-form" aria-label="Food environment analysis form">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="foodenv-input-2"> Average Soda Price (cents)</label>
+            <input type="number" id="foodenv-input-2" name="soda_price" placeholder="Enter value" step="0.01" aria-required="true" required>
+        </div>
+
+        <div class="form-group">
+            <label for="foodenv-input-3">Farmers Market Coverage (%)</label>
+            <input type="number" id="foodenv-input-3" name="fmrktpth16" placeholder="Enter value" step="0.01" aria-required="true" required>
+        </div>
+
+        <!-- <div class="form-group">
+            <label for="foodenv-input-4">Grocery Store Path 2009 (%)</label>
+            <input type="number" id="foodenv-input-4" name="grocpth09" placeholder="Enter value" step="0.01" aria-required="true" required>
+        </div> -->
+
+        <div class="form-group">
+            <label for="foodenv-input-4">Grocery Store Change 2009-2014 (%)</label>
+            <input type="number" id="foodenv-input-5" name="pch_grocpth_09_14" placeholder="Enter value" step="0.01" aria-required="true" required>
+        </div>
+
+        <div class="form-group">
+            <label for="foodenv-input-5">Fast-Food Density 2009 (%)</label>
+            <input type="number" id="foodenv-input-6" name="fsrpth09" placeholder="Enter value" step="0.01" aria-required="true" required>
+        </div>
+
+        <div class="form-group">
+            <label for="foodenv-input-6">Fast-Food Density 2014 (%)</label>
+            <input type="number" id="foodenv-input-7" name="fsrpth14" placeholder="Enter value" step="0.01" aria-required="true" required>
+        </div>
+
+        <div class="form-group">
+            <label for="foodenv-input-7">Population 65+ Years Old (%)</label>
+            <input type="number" id="foodenv-input-8" name="pct_65older10" placeholder="Enter value" step="0.01" aria-required="true" required>
+        </div>
+
+        <div class="form-group">
+            <label for="foodenv-input-8">Population Decline Rate (%)</label>
+            <input type="number" id="foodenv-input-9" name="poploss10" placeholder="Enter value" step="0.01" aria-required="true" required>
+        </div>
+
+        <button type="button" class="submit-btn" onclick="submitPrediction()">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <polyline points="12 5 12 19"></polyline>
+                <polyline points="5 12 19 12"></polyline>
+            </svg>
+            Generate Prediction
+        </button>
+    </form>
+    <div class="result-container" id="foodenv-result" style="display: none;" role="region" aria-live="polite"
+        aria-label="Prediction results">
+        <h3>
+            <svg class="result-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z">
+                </path>
+            </svg>
+            Prediction Result
+        </h3>
+        <div class="result-content">
+            <p id="foodenv-result-text"></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: inherit;
+    }
+</style>
+
+<script>
+    function submitPrediction() {
+        const formData = new FormData(document.querySelector('.prediction-form'));
+        const data = Object.fromEntries(formData);
+
+        const requiredFields = ['soda_price', 'fmrktpth16',
+                            'pch_grocpth_09_14', 'fsrpth09', 'fsrpth14', 
+                            'pct_65older10', 'poploss10'];
+        
+        for (let field of requiredFields) {
+            if (!data[field]) {
+                alert('Please fill in all required fields');
+                return;
+            }
+        }
+
+        fetch('/food-env/predict/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            console.log("Response status:", response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(result => {
+            console.log("Parsed result:", result);
+
+            if (!result) {
+                alert('Empty response from server');
+                return;
+            }
+
+            if (result.success) {
+                const pred = result.prediction;
+                if (pred === null || typeof pred === 'undefined' || !isFinite(pred)) {
+                    // Friendly message when prediction is missing
+                    document.getElementById('foodenv-result-text').innerHTML =
+                        `<strong>No prediction returned from model.</strong>` +
+                        (result.raw ? `<pre style="white-space:pre-wrap">${JSON.stringify(result.raw, null, 2)}</pre>` : '');
+                } else {
+                    // Safe numeric formatting
+                    const n = Number(pred);
+                    document.getElementById('foodenv-result-text').innerHTML = 
+                        `<strong>Predicted Grocery Stores Per 1000 Residents:</strong> ${n.toFixed(2)}`;
+                }
+
+                document.getElementById('foodenv-result').style.display = 'block';
+            } else {
+                alert('Error: ' + (result.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+        });
+    }
+</script>
+
+{% endblock %}

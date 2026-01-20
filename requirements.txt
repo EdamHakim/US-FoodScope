@@ -1,0 +1,10 @@
+django==5.2.*
+dj_database_url
+whitenoise
+gunicorn
+requests
+numpy
+huggingface_hub
+joblib
+pandas
+scikit-learn

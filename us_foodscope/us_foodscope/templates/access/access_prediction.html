@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Access Prediction Dashboard</h2>
+    <p class="page-description">
+        Predict the percentage of population with limited food access and explore intervention simulations.
+    </p>
+</div>
+
+<div class="dashboard-grid">
+    <!-- LEFT PANEL: INPUT FORM -->
+    <div class="input-panel">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
+                    </svg>
+                    Prediction Parameters
+                </h3>
+            </div>
+
+            <form method="post" class="prediction-form">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="form-errors"
+                    style="color: #dc2626; margin-bottom: 1rem; padding: 0.5rem; background: #fee2e2; border-radius: 4px;">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="form-section">
+                    <h4 class="form-section-title">Food Access & Demographics</h4>
+                    <div class="grid-form">
+
+                        <div class="form-group">
+                            {{ form.PCT_LACCESS_POP10.label_tag }}
+                            {{ form.PCT_LACCESS_POP10 }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.LACCESS_LOWI15.label_tag }}
+                            {{ form.LACCESS_LOWI15 }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.LACCESS_HISP15.label_tag }}
+                            {{ form.LACCESS_HISP15 }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.LACCESS_NHASIAN15.label_tag }}
+                            {{ form.LACCESS_NHASIAN15 }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.LACCESS_BLACK15.label_tag }}
+                            {{ form.LACCESS_BLACK15 }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.Median_Income.label_tag }}
+                            {{ form.Median_Income }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.Poverty_Rate.label_tag }}
+                            {{ form.Poverty_Rate }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.Food_Tax_Rate_14.label_tag }}
+                            {{ form.Food_Tax_Rate_14 }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.PCT_65OLDER10.label_tag }}
+                            {{ form.PCT_65OLDER10 }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.PCT_18YOUNGER10.label_tag }}
+                            {{ form.PCT_18YOUNGER10 }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="display: flex; gap: 1rem; align-items: center; margin-top: 2rem;">
+                    <button type="submit" class="submit-btn" style="flex: 1;">
+                        Run Prediction
+                    </button>
+                    <button type="button" onclick="clearForm()" class="clear-btn">
+                        Clear
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: OUTPUT + HISTORY -->
+    <div class="insights-panel">
+
+        <!-- Error -->
+        {% if error_message %}
+        <div class="card result-card" style="border-color: var(--color-alert); background: #fef2f2;">
+            <div class="card-header" style="border-bottom: none; margin-bottom: 0;">
+                <h3 class="card-title" style="color: var(--color-alert);">
+                    Error
+                </h3>
+            </div>
+            <p style="margin-top: 0.5rem; color: var(--color-text-secondary);">{{ error_message }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Prediction Result -->
+        {% if prediction_result is not None %}
+        <div class="card result-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    Prediction Output
+                </h3>
+            </div>
+
+            <div style="text-align: center; padding: 1.5rem 0;">
+                <div class="result-label">Predicted Limited Food Access</div>
+                <div class="result-value">{{ prediction_result|floatformat:4 }}%</div>
+
+                <div style="margin-top: 0.75rem; font-size: 13px; color: var(--color-text-muted);">
+                    This is the estimated % of population with limited food access (model output).
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card result-card">
+            <div class="card-header">
+                <h3 class="card-title">Result</h3>
+            </div>
+            <p style="color: var(--color-text-muted); padding: 1rem;">
+                Your output will appear here after you run prediction.
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Recent History -->
+        {% if prediction_history %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent History</h3>
+            </div>
+
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Result</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in prediction_history %}
+                        <tr>
+                            <td>{{ item.created_at|date:"M d" }}</td>
+                            <td style="font-weight: 700; color: var(--color-primary);">
+                                {{ item.prediction_value|floatformat:"4" }}%
+                            </td>
+                            <td>
+                                <a href="?load_id={{ item.id }}" class="reuse-btn" title="Reload this scenario">
+                                    Reuse
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function clearForm() {
+        const form = document.querySelector('.prediction-form');
+        if (form) form.reset();
+    }
+</script>
+{% endblock %}

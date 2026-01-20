@@ -1,0 +1,799 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .clustering-dashboard {
+        padding: 20px;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        margin-bottom: 30px;
+    }
+
+    .page-header h2 {
+        color: #1e293b;
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .page-description {
+        color: #64748b;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    /* Two Column Layout: Left Form, Right Split into Top/Bottom */
+    .clustering-layout {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 20px;
+        height: calc(100vh - 140px);
+    }
+
+    /* Left Sidebar - Form (full height) */
+    .form-panel {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 24px;
+        overflow-y: auto;
+    }
+
+    .form-panel-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .form-panel-header svg {
+        width: 20px;
+        height: 20px;
+        color: #0f766e;
+    }
+
+    .form-panel-header h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    /* Right Column - Split into Top (Priority) and Bottom (Map) */
+    .right-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        height: 100%;
+    }
+
+    /* Top Section - Priority States */
+    .priority-panel {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 24px;
+        flex: 0 0 45%; /* Takes 45% of right column height */
+        min-height: 300px;
+        overflow-y: auto;
+    }
+
+    .priority-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .priority-header svg {
+        width: 24px;
+        height: 24px;
+        color: #dc2626;
+    }
+
+    .priority-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #dc2626;
+        margin: 0;
+    }
+
+    .priority-description {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .priority-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: calc(100% - 100px);
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+
+    .priority-item {
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 4px solid;
+        background: #fef2f2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s;
+    }
+
+    .priority-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .priority-item.rank-1 { border-left-color: #dc2626; }
+    .priority-item.rank-2 { border-left-color: #ea580c; }
+    .priority-item.rank-3 { border-left-color: #f59e0b; }
+    .priority-item.rank-4 { border-left-color: #eab308; }
+    .priority-item.rank-5 { border-left-color: #84cc16; }
+
+    .priority-info h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 4px 0;
+    }
+
+    .priority-info p {
+        font-size: 12px;
+        color: #64748b;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .priority-score {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0f766e;
+    }
+
+    /* Bottom Section - Map */
+    .map-panel {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        flex: 1; /* Takes remaining 55% of right column height */
+        position: relative;
+    }
+
+    .map-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 20px 24px;
+        border-bottom: 2px solid #f1f5f9;
+        background: white;
+    }
+
+    .map-header svg {
+        width: 24px;
+        height: 24px;
+        color: #0f766e;
+    }
+
+    .map-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .map-container {
+        height: calc(100% - 70px);
+        position: relative;
+        background: #f8fafc;
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Form Styling */
+    .section-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f766e;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 24px 0 12px 0;
+        padding-top: 20px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .section-title:first-of-type {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+    }
+
+    .form-row {
+        margin-bottom: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #475569;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .form-group input {
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #1e293b;
+        background: white;
+        transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #0f766e;
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+    }
+
+    .form-group input::placeholder {
+        color: #94a3b8;
+        font-size: 13px;
+    }
+
+    .text-danger {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .submit-btn {
+        background: #0f766e;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .submit-btn:hover {
+        background: #0f766e;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    .submit-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .clear-btn {
+        padding: 12px 24px;
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .clear-btn:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+    }
+
+    /* Error Alert */
+    .result-alert {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: start;
+        gap: 12px;
+    }
+
+    .result-alert svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        margin-top: 2px;
+        color: #dc2626;
+    }
+
+    .result-content {
+        flex: 1;
+    }
+
+    .result-content h4 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 8px 0;
+    }
+
+    .result-details {
+        font-size: 13px;
+        color: #475569;
+        line-height: 1.6;
+    }
+
+    /* Empty State */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #94a3b8;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .empty-state svg {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+        opacity: 0.3;
+    }
+
+    .empty-state h4 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        color: #64748b;
+    }
+
+    .empty-state p {
+        font-size: 14px;
+        margin: 0;
+    }
+
+    /* Map Legend */
+    .map-legend {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        min-width: 180px;
+    }
+
+    .legend-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .legend-items {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #475569;
+    }
+
+    .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .legend-color.cluster-1 { background: #dc2626; }
+    .legend-color.cluster-2 { background: #f59e0b; }
+    .legend-color.cluster-3 { background: #eab308; }
+    .legend-color.no-data { background: #94a3b8; }
+
+    @media (max-width: 1400px) {
+        .clustering-layout {
+            grid-template-columns: 300px 1fr;
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .clustering-layout {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+        
+        .right-column {
+            height: 800px;
+        }
+        
+        .priority-panel {
+            flex: 0 0 300px;
+        }
+        
+        .map-container {
+            height: 500px;
+        }
+    }
+</style>
+
+<div class="clustering-dashboard">
+    <div class="page-header">
+        <h2>State Clustering Analysis</h2>
+        <p class="page-description">ML-powered state classification and risk distribution mapping</p>
+    </div>
+
+    <div class="clustering-layout">
+        <!-- LEFT PANEL - FORM (Full height) -->
+        <div class="form-panel">
+            <div class="form-panel-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <h3>Input Parameters</h3>
+            </div>
+
+            {% if error_message %}
+            <div class="result-alert" role="region" aria-live="polite">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path>
+                </svg>
+                <div class="result-content">
+                    <h4>Error</h4>
+                    <div class="result-details">{{ error_message }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'finance_clustering' %}">
+                {% csrf_token %}
+                <input type="hidden" name="model_type" value="clustering">
+
+                <div class="section-title">Demographics</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.Median_Income.id_for_label }}">Median Income ($)</label>
+                        {{ form.Median_Income }}
+                        {% if form.Median_Income.errors %}
+                            <div class="text-danger">{{ form.Median_Income.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="section-title">Health & Security</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.FOODINSEC_13_15.id_for_label }}">Food Insecurity Rate (%)</label>
+                        {{ form.FOODINSEC_13_15 }}
+                        {% if form.FOODINSEC_13_15.errors %}
+                            <div class="text-danger">{{ form.FOODINSEC_13_15.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.Adult_Obesity_Rate13.id_for_label }}">Adult Obesity Rate (%)</label>
+                        {{ form.Adult_Obesity_Rate13 }}
+                        {% if form.Adult_Obesity_Rate13.errors %}
+                            <div class="text-danger">{{ form.Adult_Obesity_Rate13.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="submit-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        Analyze Cluster
+                    </button>
+                    <button type="reset" class="clear-btn">Clear Form</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- RIGHT COLUMN - Split into Top (Priority) and Bottom (Map) -->
+        <div class="right-column">
+            <!-- TOP SECTION - Priority States -->
+            <div class="priority-panel">
+                <div class="priority-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <h3>Priority States</h3>
+                </div>
+                
+                <p class="priority-description">
+                    Top 5 states requiring immediate attention based on composite risk score.
+                </p>
+
+                <div class="priority-list">
+                    {% if priority_states %}
+                        {% for state in priority_states %}
+                        <div class="priority-item rank-{{ forloop.counter }}">
+                            <div class="priority-info">
+                                <h4>{{ state.name }}</h4>
+                                <p>Cluster {{ state.cluster }}</p>
+                            </div>
+                            <div class="priority-score">{{ state.score }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state" style="padding: 20px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            <h4 style="font-size: 16px;">No Data Available</h4>
+                            <p>Run clustering analysis to see priority states</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- BOTTOM SECTION - Map -->
+            <div class="map-panel">
+                <div class="map-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <h3>State Risk Distribution Map</h3>
+                </div>
+                <div class="map-container">
+                    <div id="map">
+                        {% if not cluster_data %}
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <h4>No Clustering Data</h4>
+                            <p>Submit the form to generate state clustering visualization</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Map Legend -->
+                    <div class="map-legend">
+                        <div class="legend-title">Risk Level</div>
+                        <div class="legend-items">
+                            <div class="legend-item">
+                                <div class="legend-color cluster-1"></div>
+                                <span>High Risk</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-2"></div>
+                                <span>Medium Risk</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color cluster-3"></div>
+                                <span>Low Risk</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Clustering page loaded');
+    
+    // Initialize map if cluster data exists
+    {% if cluster_data %}
+    setTimeout(function() {
+        initializeMap();
+    }, 500); // Small delay to ensure DOM is ready
+    {% endif %}
+});
+
+function initializeMap() {
+    console.log('Initializing map...');
+    
+    try {
+        // Initialize Leaflet map
+        const map = L.map('map').setView([39.8283, -98.5795], 4);
+        
+        // Add tile layer with better contrast for markers
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap, © CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Cluster data from backend
+        const clusterData = {{ cluster_data|safe }};
+        console.log('Cluster data:', clusterData);
+        
+        if (!clusterData || clusterData.length === 0) {
+            console.warn('No cluster data available');
+            return;
+        }
+        
+        // Create a marker cluster group
+        const markers = L.markerClusterGroup({
+            maxClusterRadius: 40,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true
+        });
+        
+        // Add markers for each state
+        clusterData.forEach(state => {
+            if (state.lat && state.lng) {
+                const color = getClusterColor(state.cluster);
+                const radius = getMarkerSize(state.score);
+                
+                // Create custom marker with cluster color
+                const marker = L.circleMarker([state.lat, state.lng], {
+                    radius: radius,
+                    fillColor: color,
+                    color: '#ffffff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+                
+                // Create popup content
+                const popupContent = `
+                    <div style="padding: 8px; min-width: 180px;">
+                        <strong style="font-size: 14px; color: #1e293b;">${state.name}</strong><br>
+                        <div style="margin: 4px 0; padding: 4px; background: ${color}20; border-radius: 4px;">
+                            <span style="font-size: 12px; color: #475569;">Cluster:</span>
+                            <strong style="font-size: 13px; color: #1e293b;"> ${state.cluster}</strong>
+                        </div>
+                        <div style="margin: 4px 0;">
+                            <span style="font-size: 12px; color: #475569;">Risk Score:</span>
+                            <strong style="font-size: 13px; color: ${getScoreColor(state.score)};"> ${state.score}</strong>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 11px; color: #64748b;">
+                            Click to zoom in
+                        </div>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                markers.addLayer(marker);
+            } else {
+                console.warn('Missing coordinates for state:', state.name);
+            }
+        });
+        
+        // Add markers to map
+        map.addLayer(markers);
+        
+        // Fit bounds to show all markers
+        if (markers.getLayers().length > 0) {
+            map.fitBounds(markers.getBounds().pad(0.1));
+        }
+        
+        console.log('Map initialized with', clusterData.length, 'states');
+        
+    } catch (error) {
+        console.error('Error initializing map:', error);
+        // Show error in map container
+        document.getElementById('map').innerHTML = `
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <h4>Map Error</h4>
+                <p>Failed to load map visualization</p>
+            </div>
+        `;
+    }
+}
+
+function getClusterColor(cluster) {
+    const colors = {
+        1: '#dc2626',  // Red - High Risk
+        2: '#f59e0b',  // Orange - Medium Risk
+        3: '#eab308',  // Yellow - Low Risk
+        4: '#10b981',  // Green - Very Low Risk
+        5: '#3b82f6',  // Blue - Minimal Risk
+    };
+    return colors[cluster] || '#94a3b8';
+}
+
+function getScoreColor(score) {
+    if (score >= 0.9) return '#dc2626';  // Red for high risk
+    if (score >= 0.7) return '#f59e0b';  // Orange for medium-high
+    if (score >= 0.5) return '#eab308';  // Yellow for medium
+    if (score >= 0.3) return '#10b981';  // Green for low
+    return '#3b82f6';  // Blue for very low
+}
+
+function getMarkerSize(score) {
+    // Larger markers for higher risk scores
+    return 8 + (score * 8);
+}
+
+// Add custom CSS for better map display
+const style = document.createElement('style');
+style.textContent = `
+    .marker-cluster {
+        background-color: rgba(124, 58, 237, 0.1) !important;
+        border: 2px solid rgba(124, 58, 237, 0.3) !important;
+    }
+    .marker-cluster div {
+        background-color: rgba(124, 58, 237, 0.6) !important;
+        color: white !important;
+        font-weight: bold;
+    }
+    .leaflet-popup-content {
+        margin: 13px 19px !important;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

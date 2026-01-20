@@ -1,0 +1,523 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <h2><i class="fas fa-chart-line text-primary me-2"></i>Regression Prediction</h2>
+    <p class="page-description">Predict local food insecurity metrics using XGBoost machine learning model.</p>
+</div>
+
+<div class="dashboard-grid">
+    <!-- LEFT PANEL: INPUT FORM -->
+    <div class="input-panel">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    Feature Input
+                </h3>
+            </div>
+
+            <form method="post" class="prediction-form" aria-label="Local food regression form">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="form-errors"
+                    style="color: #dc2626; margin-bottom: 1rem; padding: 0.5rem; background: #fee2e2; border-radius: 4px;">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                {% if error_message %}
+                <div class="alert alert-error" style="color: #dc2626; margin-bottom: 1rem; padding: 0.75rem; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 4px;">
+                    <strong>Error:</strong> {{ error_message }}
+                </div>
+                {% endif %}
+
+                <!-- Dynamic Form Fields - Grouped by Category -->
+                {% if field_groups %}
+                    {% for category, fields in field_groups.items %}
+                    <div class="form-section">
+                        <h4 class="form-section-title">{{ category }}</h4>
+                        <div class="grid-form">
+                            {% for field in fields %}
+                            <div class="form-group">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.help_text %}
+                                <small class="form-help">{{ field.help_text|safe }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                <div class="error-message">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Fallback: Display all fields if grouping not available -->
+                    <div class="form-section">
+                        <h4 class="form-section-title">Input Features</h4>
+                        <div class="grid-form">
+                            {% for field in form %}
+                                {% if field.field.widget.input_type != 'hidden' %}
+                                <div class="form-group">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                    <small class="form-help">{{ field.help_text|safe }}</small>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                    <div class="error-message">{{ field.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="form-actions" style="display: flex; gap: 1rem; align-items: center; margin-top: 2rem;">
+                    <button type="submit" class="submit-btn" style="flex: 1;">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="12 5 12 19"></polyline>
+                            <polyline points="5 12 19 12"></polyline>
+                        </svg>
+                        Predict & Cluster
+                    </button>
+                    <button type="button" onclick="clearForm()" class="clear-btn">
+                        Clear
+                    </button>
+                </div>
+            </form>
+
+            <!-- Prediction History -->
+            {% if prediction_history %}
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+                <h4 class="form-section-title">Recent Predictions</h4>
+                <div class="history-list">
+                    {% for history in prediction_history %}
+                    <div class="history-item" style="padding: 0.5rem; margin-bottom: 0.5rem; background: #f9fafb; border-left: 3px solid #3b82f6; border-radius: 4px;">
+                        <a href="?load_id={{ history.id }}" style="color: #3b82f6; text-decoration: none; font-size: 0.875rem;">
+                            <strong>{{ history.created_at|date:"M d, Y H:i" }}</strong>
+                        </a>
+                        {% if history.prediction_value %}
+                        <div style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">
+                            Prediction: <strong>{{ history.prediction_value|floatformat:2 }}</strong>
+                            {% if history.cluster_assigned %}
+                            | Cluster: <strong>{{ history.cluster_assigned }}</strong>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: RESULTS -->
+    <div class="results-panel">
+        <!-- Regression Results -->
+        {% if prediction_result %}
+        <div class="card result-card">
+            <div class="card-header success">
+                <h3 class="card-title">
+                    <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Regression Prediction
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="result-metric">
+                    <div class="metric-label">Predicted Value</div>
+                    <div class="metric-value">{{ prediction_result.value|floatformat:3 }}</div>
+                </div>
+                
+                {% if prediction_result.confidence %}
+                <div class="result-metric">
+                    <div class="metric-label">Model Confidence</div>
+                    <div class="metric-value">{{ prediction_result.confidence|floatformat:2 }}%</div>
+                </div>
+                {% endif %}
+                
+                <div class="result-metric">
+                    <div class="metric-label">Model Used</div>
+                    <div class="metric-value" style="font-size: 0.875rem;">{{ prediction_result.model }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Clustering Results -->
+        {% if cluster_result %}
+        <div class="card result-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.5a2 2 0 00-1 .3l-2.5 1.3A2 2 0 0012 16v-2m0 0h6.5a2 2 0 012 2v4a2 2 0 01-2 2h-6.5" />
+                    </svg>
+                    Cluster Analysis Result
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if cluster_info %}
+                <div class="result-metric" style="margin-bottom: 1.5rem; padding: 1.25rem; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <h4 style="margin: 0 0 0.75rem 0; color: #1f2937; font-size: 1.125rem;">
+                        <strong>Cluster {{ cluster_result.cluster }}: {{ cluster_info.title }}</strong>
+                    </h4>
+                    <p style="margin: 0; color: #4b5563; line-height: 1.6; font-size: 0.95rem;">
+                        {{ cluster_info.description }}
+                    </p>
+                </div>
+                {% else %}
+                <div class="result-metric">
+                    <div class="metric-label">Assigned Cluster</div>
+                    <div class="metric-value" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 1rem; color: white; text-align: center;">
+                        Cluster #{{ cluster_result.cluster }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if cluster_result.probability %}
+                <div class="result-metric">
+                    <div class="metric-label">Assignment Probability</div>
+                    <div class="metric-value">{{ cluster_result.probability|floatformat:2 }}%</div>
+                </div>
+                {% endif %}
+                
+                {% if cluster_result.coordinates %}
+                <div class="result-metric">
+                    <div class="metric-label">Cluster Center</div>
+                    <div class="metric-value" style="font-size: 0.875rem;">
+                        X: {{ cluster_result.coordinates.x|floatformat:2 }}, Y: {{ cluster_result.coordinates.y|floatformat:2 }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- No Results Message -->
+        {% if not prediction_result and not cluster_result and not error_message %}
+        <div class="card empty-state">
+            <div class="card-body" style="text-align: center; padding: 3rem 1rem;">
+                <svg class="icon-lg" style="width: 100px; height: 100px; opacity: 0.3; margin-bottom: 1rem;"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <h4 style="color: #666; margin-bottom: 0.5rem;">Ready for Prediction</h4>
+                <p style="color: #999; font-size: 0.875rem;">Fill in the features and click "Predict & Cluster" to see results here.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Map Visualization -->
+        {% if map_data %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 20l-5.447-2.724A1 1 0 003 16.382V5.618a1 1 0 011.553-.894L9 7.5m0 0l6-3.724m0 0l5.447-2.724A1 1 0 0021 5.618v10.764a1 1 0 01-1.553.894L15 12.5m0 0l-6 3.724m6-10.724v10.724" />
+                    </svg>
+                    Clustering Map
+                </h3>
+            </div>
+            <div class="card-body">
+                <div id="clustering-map" style="width: 100%; height: 400px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <p style="color: #666;">Map visualization loading...</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.page-description {
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.input-panel,
+.results-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    background: #f3f4f6;
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.card-header.success {
+    background: #ecfdf5;
+    border-bottom-color: #6ee7b7;
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.icon-lg {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+}
+
+.grid-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-help {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.error-message {
+    color: #dc2626;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+}
+
+.submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.clear-btn {
+    padding: 0.75rem 1.5rem;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clear-btn:hover {
+    background: #e5e7eb;
+}
+
+.result-card {
+    border-top: 4px solid #10b981;
+}
+
+.result-metric {
+    margin-bottom: 1.5rem;
+}
+
+.result-metric:last-child {
+    margin-bottom: 0;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.history-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #f9fafb;
+    border-left: 3px solid #3b82f6;
+    border-radius: 4px;
+}
+
+.history-item a {
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.history-item a:hover {
+    text-decoration: underline;
+}
+
+.empty-state {
+    border-top: 4px solid #d1d5db;
+}
+
+.empty-state .card-body {
+    text-align: center;
+}
+</style>
+
+<script>
+function clearForm() {
+    document.querySelector('.prediction-form').reset();
+}
+
+// Show loading state on submit
+document.querySelector('.prediction-form').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    // Let the form submit normally (POST)
+    // Form will reload with results in context
+});
+
+// Load map data if available
+document.addEventListener('DOMContentLoaded', function() {
+    const mapContainer = document.getElementById('clustering-map');
+    if (mapContainer) {
+        loadClusteringMap();
+    }
+});
+
+function loadClusteringMap() {
+    // Simple visualization - customize based on your map library
+    const mapContainer = document.getElementById('clustering-map');
+    if (!mapContainer) return;
+    
+    mapContainer.innerHTML = `
+        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+            <div style="text-align: center;">
+                <h4>Cluster Visualization</h4>
+                <p>Map will be rendered here with cluster data</p>
+            </div>
+        </div>
+    `;
+}
+</script>
+
+        </div> <!-- End dashboard-grid -->
+
+{% endblock %}
